@@ -38,7 +38,7 @@ const Categorys = () => {
               <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white text-center mb-4">{categoria.name}</h5>
               <span className="text-lg font-bold text-black dark:text-white">{categoria.description}</span>
             </div>
-            <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center justify-center ">
               <Link to={`/category/${categoria._id}`} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-lg px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Ver categoría</Link>
             </div>
           </li>
