@@ -9,6 +9,7 @@ const DetaillProduct = () => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState(0);
     const [category, setCategory] = useState('');
+    const [type, setType] = useState('');
     const [stock, setStock] = useState(1);
     const [image, setImageUrl] = useState('');
     const navigate = useNavigate();
@@ -27,6 +28,7 @@ const DetaillProduct = () => {
             setDescription(response.data.description);
             setPrice(response.data.price);
             setCategory(response.data.category.name);
+            setType(response.data.type.name);
             setImageUrl(response.data.image);
         } catch (error) {
             console.error('Error al obtener el producto:', error);
@@ -52,12 +54,16 @@ const DetaillProduct = () => {
                             <h2 className="text-6xl font-bold text-gray-800 dark:text-white mb-2">{name}</h2>
                             <div className="flex flex-col mb-4">
                                 <div className="mr-4">
-                                    <span className="font-bold text-gray-700 dark:text-gray-300">Price:</span>
+                                    <span className="font-bold text-gray-700 dark:text-gray-300">Price: </span>
                                     <span className="text-gray-600 dark:text-gray-300">${price}</span>
                                 </div>
                                 <div>
-                                    <span className="font-bold text-gray-700 dark:text-gray-300">Category:</span>
+                                    <span className="font-bold text-gray-700 dark:text-gray-300">Category: </span>
                                     <span className="text-gray-600 dark:text-gray-300">{category}</span>
+                                </div>
+                                <div>
+                                    <span className="font-bold text-gray-700 dark:text-gray-300">Tipo: </span>
+                                    <span className="text-gray-600 dark:text-gray-300">{type}</span>
                                 </div>
                                
                             </div>

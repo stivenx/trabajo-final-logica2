@@ -17,7 +17,7 @@ const AdminEdit = () => {
     const navigate = useNavigate();
     const { id } = useParams();
 
-    // Obtener el token cuando se carga el componente
+   
     useEffect(() => {
         
         handleGetProduct();

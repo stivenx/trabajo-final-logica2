@@ -9,6 +9,7 @@ const CatagoryProduct = () => {
     const [products, setProductos] = useState([]);
     const [categoria, setCategoria] = useState({});
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
     const { id } = useParams("");
   
     useEffect(() => {
@@ -18,6 +19,7 @@ const CatagoryProduct = () => {
           const categoria = await api.get(`/categories/${id}`);
           setCategoria(categoria.data);
           setProductos(response.data);
+          setLoading(false);
         } catch (error) {
           setError("Error al cargar los productos");
         }
@@ -25,6 +27,11 @@ const CatagoryProduct = () => {
   
       fetchProductos();
     }, [])
+  
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+  
 
     return (
         <section className="bg-gray-50 dark:bg-gray-900 py-16">

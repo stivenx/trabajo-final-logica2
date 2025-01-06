@@ -37,7 +37,7 @@ const Login = () => {
                             Your email
                         </label>
                         <input
-                            type="gmail"
+                            type="email"
                             name="email"
                             id="email"
                             value={email}

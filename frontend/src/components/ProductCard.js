@@ -11,7 +11,11 @@ const ProductCard = ({ product }) => {
         <div className="px-5 pb-5">
         <Link to={`/products/${product._id}`}>
             <h5 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{product.name}</h5>
-            <span className="text-sm font-bold text-black  dark:text-white">{product.category.name}</span>
+            <div className="flex flex-col">
+             <span className="text-sm font-bold text-black dark:text-white">{product.category.name}</span>
+             <span className="text-sm font-bold text-black dark:text-white">{product.type.name}</span>
+            </div>
+
         </Link>
         <div className="flex items-center mt-2.5 mb-5">
             <div className="flex items-center space-x-1 rtl:space-x-reverse">

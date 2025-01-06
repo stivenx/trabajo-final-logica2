@@ -18,6 +18,7 @@ import UserEdit from './pages/UsersEdit';
 import CategoryList from './pages/CategoryList';
 import CategoryCreate from './pages/CategoryCreate';
 import CategoryEdit from './pages/CategoryEdit';
+import ProductosPorCategoriaYTipo from './pages/productsCategoType';
 
 
 //Components
@@ -44,6 +45,7 @@ function App() {
         <Route path="/categoryList" element={<CategoryList />} />
         <Route path="/categoryList/create" element={<CategoryCreate />} />
         <Route path="/categoryList/edit/:id" element={<CategoryEdit />} />
+        <Route path="/productsCategoType" element={<ProductosPorCategoriaYTipo />} />
 
         </Routes>
       <Footer />

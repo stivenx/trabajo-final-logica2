@@ -70,6 +70,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 
         const user = await User.findByIdAndUpdate(id, { name, email, password: hashedPassword, direction }, { new: true });
         res.status(200).json(user);
+        
     } catch (error) {    
         res.status(500).json({ error: "Error al actualizar el usuario" });
     }
