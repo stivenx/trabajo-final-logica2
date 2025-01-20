@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import Product from "../models/product";
+import Category from "../models/category";
+import Type from "../models/type";
 
 
 export const getAllProducts = async (req: Request, res: Response): Promise<void> => {
@@ -24,11 +26,37 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { name, description, price, category, stock, image, type } = req.body;
+        
+        try {
+            const categoryExists = await Category.findById(category);
+            if (!categoryExists ) {
+                res.status(404).json({ error: "Categoría no encontrada" });
+                return;
+            }
+
+        } catch (error) {
+            res.status(500).json({ error: "Error al buscar la categoría" });
+            return;
+            
+        }
+        try {
+            const typeExists = await Type.findById(type);
+            if (!typeExists) {
+                res.status(404).json({ error: "Tipo no encontrado" });
+                return;
+            }
+        } catch (error) {
+            res.status(500).json({ error: "Error al buscar el tipo" });
+            return;
+            
+        }
+        
         const product = new Product({ name, description, price, category, stock, image, type });
         await product.save();
         res.status(201).json(product);
     } catch (error) {
         res.status(500).json({ error: "Error al crear el producto" });
+        return;
     }
 };
 
@@ -36,10 +64,36 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
     try {
         const { id } = req.params;
         const { name, description, price, category, stock, image, type } = req.body;
+
+        try {
+            const categoryExists = await Category.findById(category);
+            if (!categoryExists ) {
+                res.status(404).json({ error: "Categoría no encontrada" });
+                return;
+            }
+
+        } catch (error) {
+            res.status(500).json({ error: "Error al buscar la categoría" });
+            return;
+            
+        }
+        try {
+            const typeExists = await Type.findById(type);
+            if (!typeExists) {
+                res.status(404).json({ error: "Tipo no encontrado" });
+                return;
+            }
+        } catch (error) {
+            res.status(500).json({ error: "Error al buscar el tipo" });
+            return;
+            
+        }
+
         const product = await Product.findByIdAndUpdate(id, { name, description, price, category, stock, image, type }, { new: true });
         res.status(200).json(product);
     } catch (error) {
         res.status(500).json({ error: "Error al actualizar el producto" });
+        return;
     }
 };
 
@@ -56,7 +110,7 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
 export const getProductsByCategory = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const products = await Product.find({ category: id }).populate('category');
+        const products = await Product.find({ category: id }).populate('category').populate('type');
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ error: "Error al obtener los productos por categoría" });
