@@ -136,3 +136,18 @@ export const getProductsByCategoryByType = async (req: Request, res: Response): 
       res.status(500).json({ error: "Error al obtener los productos por categoría y tipo" });
     }
   }
+
+
+  export const searchProducts = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { name } = req.params;
+      if (!name) {
+        res.status(400).json({ error: "El nombre del producto es requerido" });
+        return;
+      }
+      const products = await Product.find({ name: { $regex: name, $options: "i" } }).populate('category',"name").populate('type',"name");
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ error: "Error al buscar los productos" });
+    }
+  };

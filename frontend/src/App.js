@@ -19,6 +19,7 @@ import CategoryList from './pages/CategoryList';
 import CategoryCreate from './pages/CategoryCreate';
 import CategoryEdit from './pages/CategoryEdit';
 import ProductosPorCategoriaYTipo from './pages/productsCategoType';
+import ProductSearch from './pages/searchProducts';
 
 
 //Components
@@ -46,6 +47,9 @@ function App() {
         <Route path="/categoryList/create" element={<CategoryCreate />} />
         <Route path="/categoryList/edit/:id" element={<CategoryEdit />} />
         <Route path="/productsCategoType" element={<ProductosPorCategoriaYTipo />} />
+        <Route path="/search" element={<ProductSearch />} />
+
+        
 
         </Routes>
       <Footer />
