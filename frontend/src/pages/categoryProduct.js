@@ -5,80 +5,86 @@ import ProductCard from "../components/ProductCard";
 
 
 const CatagoryProduct = () => {
-  const [products, setProductos] = useState([]);
-  const [categoria, setCategoria] = useState({});
+  const [products, setProducts] = useState([]);
+  const [category, setCategory] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const { id } = useParams("");
-  const [type, setType] = useState([]);
-  const [selectType, setSelectType] = useState("");
+  const { id } = useParams(); // Obtiene el ID de la categoría desde la URL
+  const [types, setTypes] = useState([]);
+  const [selectedType, setSelectedType] = useState("");
 
-
+  // Fetch de productos y categorías
   useEffect(() => {
-    const fetchProductos = async () => {
-      try {
-        const response = await api.get(`/products/category/${id}`);
-        const categoria = await api.get(`/categories/${id}`);
-        setCategoria(categoria.data);
-        setProductos(response.data);
-        setLoading(false);
-      } catch (error) {
-        setError("Error al cargar los productos");
-      }
-    };
-
-
+    
     const fetchTypes = async () => {
       try {
         const response = await api.get(`/types/`);
-        setType(response.data);
+        setTypes(response.data);
       } catch (error) {
         setError("Error al cargar los tipos");
       }
     };
+    fetchProductos();
+    fetchTypes();
 
-
-    fetchProductos().then(() => {
-      fetchTypes();
-      fetchProductsWithCategoryAndType();
-    });
-  }, [id, selectType]);
-
-
-  const fetchProductsWithCategoryAndType = async () => {
-    if (id && selectType) {
-      fetchProductsCategoryType(id, selectType);
-    };
-  };
-
-
-  const fetchProductsCategoryType = async (id, selectType) => {
+  }, [id]);
+  const fetchProductos = async () => {
     try {
-      const response = await api.get(`/products/${id}/${selectType}`);
-      setProductos(response.data);
+      const response = await api.get(`/products/category/${id}`);
+      const categoria = await api.get(`/categories/${id}`);
+      setCategory(categoria.data);
+      setProducts(response.data);
+      setLoading(false);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      setError("Error al cargar los productos");
     }
   };
 
+  // Fetch de productos por tipo y categoría
+  useEffect(() => {
+    if (selectedType) {
+      fetchProductsByCategoryAndType(id, selectedType);
+    } else {
+      fetchProductos()
+    }
+  }, [id, selectedType]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // Obtener productos por categoría
+ 
+
+  // Obtener productos por categoría y tipo
+  const fetchProductsByCategoryAndType = async (categoryId, typeId) => {
+    try {
+      const response = await api.get(`/products/${categoryId}/${typeId}`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error al cargar productos filtrados:", error);
+    }
+  };
+
+  if (loading) return <div className="text-center py-10 text-lg">Cargando productos...</div>;
+  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
 
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-16">
-      <select value={selectType} onChange={(event) => setSelectType(event.target.value)}>
-        <option value="">Selecciona un tipo</option>
-        {type && type.map((tipo) => (
-          <option key={tipo._id} value={tipo._id}>
-            {tipo.name}
-          </option>
-        ))}
-      </select>
+      {/* Selector de tipo de producto */}
+      <div className="flex justify-center mb-6">
+        <select
+          value={selectedType}
+          onChange={(event) => setSelectedType(event.target.value)}
+          className="p-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white"
+        >
+          <option value="">Todos los tipos</option>
+          {types.map((tipo) => (
+            <option key={tipo._id} value={tipo._id}>
+              {tipo.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="flex flex-wrap items-center justify-center">
-        <h1 className="w-full text-5xl font-bold text-center p-8 dark:text-white ">{categoria.name} </h1>
+        <h1 className="w-full text-5xl font-bold text-center p-8 dark:text-white ">{category.name} </h1>
         {products.length === 0 ? (
           <p className="text-center text-gray-500">No hay productos de este tipo</p>
         ) : (
