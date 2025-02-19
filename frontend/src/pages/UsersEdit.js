@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../apiconfig/api';
 
+
 const UserEdit = () => {
 
     //useAdminRedirect();
@@ -72,7 +73,7 @@ const UserEdit = () => {
             </h1>
             <form className="w-full max-w-md mx-auto" onSubmit={handleSubmit}>
                 <div className="mb-5">
-                    <label for="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         nombre:
                     </label>
                     <input type="text" id="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -80,7 +81,7 @@ const UserEdit = () => {
                 
                 
                 <div className="mb-5">
-                    <label for="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         email:
                     </label>
                     <input type="text" id="price" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -88,13 +89,13 @@ const UserEdit = () => {
 
                 
                 <div className="mb-5">
-                    <label for="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         password:
                     </label>
                     <input type="password" id="password" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
                 <div className="mb-5">
-                    <label for="direction" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    <label htmlFor="direction" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         direccion:
                     </label>
                     <input type="text" id="direction" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={direction} onChange={(e) => setDirection(e.target.value)} required />

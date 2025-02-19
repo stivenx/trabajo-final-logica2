@@ -2,6 +2,9 @@ import React from 'react';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import "./index.css";
 import './App.css';
+import  { CartProvider } from "./context/cartContext";
+import { AuthProvider } from "./context/AuthContext";
+
 
 //Pages
 import Home from './pages/Home';
@@ -20,6 +23,7 @@ import CategoryCreate from './pages/CategoryCreate';
 import CategoryEdit from './pages/CategoryEdit';
 import ProductosPorCategoriaYTipo from './pages/productsCategoType';
 import ProductSearch from './pages/searchProducts';
+import CartPage from './pages/cartPage';
 
 
 //Components
@@ -29,6 +33,8 @@ import ThemeToggleBubble from './components/ThemeToggleBubble';
 
 function App() {
   return (
+    <AuthProvider>
+    <CartProvider>
     <Router>
       <Navbar />
       <Routes>
@@ -48,6 +54,7 @@ function App() {
         <Route path="/categoryList/edit/:id" element={<CategoryEdit />} />
         <Route path="/productsCategoType" element={<ProductosPorCategoriaYTipo />} />
         <Route path="/search" element={<ProductSearch />} />
+        <Route path="/cart" element={<CartPage />} />
 
         
 
@@ -55,6 +62,8 @@ function App() {
       <Footer />
       <ThemeToggleBubble />
     </Router>
+    </CartProvider>
+    </AuthProvider>
     
   );
 }

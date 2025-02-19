@@ -1,15 +1,23 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface ICarrito extends Document {
-    User: Schema.Types.ObjectId;
-    products: Schema.Types.ObjectId[];
-    total: number;
+export interface ICart extends Document {
+    user: Schema.Types.ObjectId;
+    items: {
+        product: Schema.Types.ObjectId;
+        quantity: number;
+    }[];
+    createdAt: Date;
 }
 
-const carritoSchema = new Schema<ICarrito>({
-    User: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    products: [{ type: Schema.Types.ObjectId, ref: "Product" }],
-    total: { type: Number, default: 0 }
+const cartSchema = new Schema<ICart>({
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    items: [
+        {
+            product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+            quantity: { type: Number, required: true, min: 1 },
+        },
+    ],
+    createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model<ICarrito>("Carrito", carritoSchema);
+export default mongoose.model<ICart>("Cart", cartSchema);

@@ -1,31 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { useContext } from "react";
+import { CartContext } from "../context/cartContext";
+import { AuthContext } from "../context/AuthContext";
 const Navbar = () => {
   console.log("Token:", localStorage.getItem("token"));
 
-  const [userId, setUserId] = useState(null);
+  const { userId } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { cart } = useContext(CartContext);
+  
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const obtenerIdUsuarioDesdeToken = () => {
-      const token = localStorage.getItem("token"); // Obtiene el token del almacenamiento local
-      if (token) {
-        const payload = token.split(".")[1]; // Obtiene la parte del payload del token
-        const decodedPayload = JSON.parse(atob(payload)); // Decodifica el payload
-        const userId = decodedPayload.id; // Obtiene el ID del usuario desde el payload
-        setUserId(userId);
-      }
-    };
-
-    obtenerIdUsuarioDesdeToken();
-  }, []);
+  
+  
 
   console.log("ID del usuario:", userId);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    window.dispatchEvent(new Event("authChange")); //forzar actualización
     navigate("/login");
   };
 
@@ -110,6 +105,14 @@ const Navbar = () => {
                     className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
                   >
                     Ver productos por tipo
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cart"
+                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
+                  >
+                    Carrito
                   </Link>
                 </li>
                 <li>

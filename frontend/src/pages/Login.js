@@ -16,6 +16,7 @@ const Login = () => {
         try {
             const {data} = await api.post("/users/login", {email, password});
             localStorage.setItem("token", data.token);
+            window.dispatchEvent(new Event("authChange")); 
             localStorage.setItem("role", data.role);
             navigate("/");
         } catch (error) {  

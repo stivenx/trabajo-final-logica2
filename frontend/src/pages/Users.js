@@ -89,7 +89,15 @@ const Users = () => {
                                 {user.direction}
                             </td>
                             <td className="px-6 py-4">
-                                {user.fechcreation}
+                             {new Date(user.fechcreation).toLocaleDateString("es-ES", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                               hour: "numeric",
+                               minute: "numeric",
+                               hour12: true
+                               
+                            })}
                             </td>
 
                             <td className="px-6 py-4">
