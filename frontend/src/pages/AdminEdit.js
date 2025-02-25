@@ -1,54 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import api from '../apiconfig/api';
-
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../apiconfig/api";
 
 const AdminEdit = () => {
-
-    //useAdminRedirect();
-
-    
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
+    const [name, setName] = useState("");
+    const [description, setDescription] = useState("");
     const [price, setPrice] = useState(0);
-    const [category, setCategory] = useState('');
+    const [category, setCategory] = useState("");
     const [stock, setStock] = useState(0);
-    const [image, setImageUrl] = useState('');
+    const [image, setImageUrl] = useState("");
+    const [type, setType] = useState("");
+    const [error, setError] = useState("");
+    const [selecteTypes, setSelectedTypes] = useState([]);
+    const [selecteCategory, setSelectedCategory] = useState([]);
+
     const navigate = useNavigate();
     const { id } = useParams();
 
-   
     useEffect(() => {
-        
         handleGetProduct();
+        handleGetTypes();
+        handleGetCategory();
     }, []);
 
+     useEffect(() => {
+          if (error) {
+              const timer = setTimeout(() => {
+                  setError("");
+              }, 5000); // 5000ms = 5 segundos
+  
+              return () => clearTimeout(timer); // Limpia el temporizador si el error cambia
+          }
+      }, [error]); // Se ejecuta cada vez que el error cambia
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+
         try {
-            const response = await api.patch(`/products/${id}`, {
+            await api.patch(`/products/${id}`, {
                 name,
                 description,
                 price,
                 stock,
                 category,
-                image
+                image,
+                type,
             });
-            console.log(response.data);
-            navigate('/admin');
+
+            navigate("/admin");
         } catch (error) {
             if (error.response) {
-                console.error('Detalles del error:', error.response.data);
-                alert(`Error: ${error.response.data.message || 'Hubo un problema al actualizar el producto'}`);
-            } else {
-                console.error('Error al actualizar el producto:', error.message);
-                alert('Hubo un problema al actualizar el producto');
-            }
-        }
-    }
+                console.error("Detalles del error:", error.response.data);
+                const errorMessage = error.response.data.message || "Error desconocido";
 
-   
+                if (error.response.status === 400) {
+                    setError(errorMessage);
+                } else if (error.response.status === 404) {
+                    if (errorMessage.toLowerCase().includes("categoría")) {
+                        setError("Error: La categoría seleccionada no existe.");
+                    } else if (errorMessage.toLowerCase().includes("tipo")) {
+                        setError("Error: El tipo seleccionado no existe.");
+                    } else {
+                        setError("Error: Producto, categoría o tipo no encontrados.");
+                    }
+                } else if (error.response.status === 500) {
+                    setError("Error del servidor. Inténtalo nuevamente más tarde.");
+                } else {
+                    setError(errorMessage);
+                }
+            } else {
+                console.error("Error de conexión:", error.message);
+                setError("Hubo un problema con la conexión al servidor.");
+            }
+            // Desplazar la pantalla hacia arriba al mostrar el error
+                window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    };
 
     const handleGetProduct = async () => {
         try {
@@ -59,60 +87,155 @@ const AdminEdit = () => {
             setCategory(response.data.category._id);
             setStock(response.data.stock);
             setImageUrl(response.data.image);
-
+            setType(response.data.type._id);
         } catch (error) {
-            console.error('Error al obtener el producto:', error);
+            console.error("Error al obtener el producto:", error);
+        }
+    };
+    const handleGetTypes = async () => {
+        try {
+            const response = await api.get("/types/");
+            setSelectedTypes(response.data);
+        } catch (error) {
+            console.error("Error al obtener los tipos:", error);
+        }
+    };
+
+    const handleGetCategory = async () => {
+        try {
+            const response = await api.get("/categories/");
+            setSelectedCategory(response.data);
+        } catch (error) {
+            console.error("Error al obtener las categorias:", error);
         }
     };
 
     return (
-        <div class="h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-800">
-            <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-5">
-                Actualizar Producto
-            </h1>
-            <form class="w-full max-w-md mx-auto" onSubmit={handleSubmit}>
-                <div class="mb-5">
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Nombre:
-                    </label>
-                    <input type="text" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={name} onChange={(e) => setName(e.target.value)} required />
+       
+            <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-700 w-full max-w-lg">
+                    <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-5">
+                        Actualizar Producto
+                    </h1>
+
+                    
+                    {error && (
+                        <div className="bg-red-500 text-white p-3 rounded-lg mb-4 text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    <form className="space-y-4" onSubmit={handleSubmit}>
+                        {/* Nombre */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">Nombre:</label>
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {/* Descripción */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">Descripción:</label>
+                            <textarea
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                rows="3"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                            ></textarea>
+                        </div>
+
+                        {/* Precio */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">Precio:</label>
+                            <input
+                                type="number"
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                value={price}
+                                onChange={(e) => setPrice(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {/* Stock */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">Existencias:</label>
+                            <input
+                                type="number"
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                value={stock}
+                                onChange={(e) => setStock(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {/* Categoría */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">
+                                Identificación de categoría:
+                            </label>
+                            <select
+                                value={category}
+                                onChange={(event) => setCategory(event.target.value)}
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                <option value="">Todos las categorías</option>
+                                {selecteCategory.map((category) => (
+                                    <option key={category._id} value={category._id}>
+                                    {category.name}
+                                    </option>
+                                ))}
+                                </select>
+                        </div>
+
+                        {/* Tipo */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">
+                                Tipo de identificación:
+                            </label>
+                            <select
+                                value={type}
+                                onChange={(event) => setType(event.target.value)}
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                >
+                                <option value="">Todos los tipos</option>
+                                {selecteTypes.map((tipo) => (
+                                    <option key={tipo._id} value={tipo._id}>
+                                    {tipo.name}
+                                    </option>
+                                ))}
+                                </select>
+                        </div>
+
+                        {/* Imagen */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">URL de la imagen:</label>
+                            <textarea
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                rows="4"
+                                value={image}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {/* Botón */}
+                        <button
+                            type="submit"
+                            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                        >
+                            Actualizar
+                        </button>
+                    </form>
                 </div>
-                
-                    <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Descripción:
-                    </label>
-                    <textarea id="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Ingrese una descripción para el producto" value={description} onChange={(e) => setDescription(e.target.value)} required />
-                
-                <div class="mb-5">
-                    <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Precio:
-                    </label>
-                    <input type="number" id="price" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={price} onChange={(e) => setPrice(e.target.value)} required />
-                </div>
-                <div class="mb-5">
-                    <label for="price" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Stock:
-                    </label>
-                    <input type="number" id="price" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={stock} onChange={(e) => setStock(e.target.value)} required />
-                </div>
-                <div class="mb-5">
-                    <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Categoría id:
-                    </label>
-                    <input type="text" id="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={category} onChange={(e) => setCategory(e.target.value)} required />
-                </div>
-                <div class="mb-5">
-                    <label for="imageUrl" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Imagen:
-                    </label>
-                    <input type="text" id="imageUrl" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={image} onChange={(e) => setImageUrl(e.target.value)} required />
-                </div>
-                <button type="submit" class="text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-700 dark:hover:bg-primary-800 dark:focus:ring-primary-900">
-                actualizar
-                </button>
-            </form>
-        </div>
+            </div>
+        
     );
-}
+};
 
 export default AdminEdit;

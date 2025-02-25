@@ -45,7 +45,7 @@ const Users = () => {
                 <h2 className="text-xl font-semibold text-primary-900 dark:text-white">
                     users</h2>           
                
-                <a href="/admin/Create" className="px-4 py-2 bg-primary-700 text-white
+                <a href="" className="px-4 py-2 bg-primary-700 text-white
                 hover:bg-primary-600">
                     Add user
                 </a>

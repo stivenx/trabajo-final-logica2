@@ -91,11 +91,11 @@ const CategoryList = () => {
         
                             <td class="px-6 py-4">
                                 <a href={`/categoryList/edit/${category._id}`} class="font-medium text-primary-500 hover:underline">
-                                    Edit</a>
+                                ✏️ Edit</a>
                             </td>
                             <td class="px-6 py-4">
                                 <a style={{cursor: "pointer"}} onClick={() => handleDelete(category._id)} class="font-medium text-red-500 hover:underline">
-                                    Delete</a>
+                                🗑 Delete</a>
                             </td>
                         </tr>
                     ))}

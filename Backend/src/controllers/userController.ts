@@ -28,7 +28,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
-         res.status(400).json({ error: "El correo electrónico ya está registrado" });
+         res.status(400).json({ message: "El correo electrónico ya está registrado" });
          return;
         }
 
@@ -41,10 +41,10 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         await user.save();
         const token = jwt.sign({ id: user.id.toString() }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        res.status(201).json({ mensaje: 'Usuario creado exitosamente', token });
+        res.status(201).json({ message: 'Usuario creado exitosamente', token });
 
     } catch (error) {
-        res.status(500).json({ error: "Error al crear el usuario" });
+        res.status(500).json({ message: "Error al crear el usuario" });
     }
 };
 
@@ -58,10 +58,10 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         }
         const token = jwt.sign({ id: user._id, }, process.env.JWT_SECRET);
         
-        res.json({mensaje: 'Login exitoso', token, });
+        res.json({ message: 'Login exitoso', token, });
        
     } catch (error) {
-        res.status(500).json({ error: "Error al iniciar sesión" });
+        res.status(500).json({ menssage: "Error al iniciar sesión" });
     }
 }
 
@@ -71,6 +71,8 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         const { name, email, password, direction } = req.body;
 
         const hashedPassword = await bcrypt.hash(password, 10);
+
+
 
         const user = await User.findByIdAndUpdate(id, { name, email, password: hashedPassword, direction }, { new: true });
         res.status(200).json(user);

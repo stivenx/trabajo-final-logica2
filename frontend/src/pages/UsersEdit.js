@@ -67,48 +67,75 @@ const UserEdit = () => {
     };
 
     return (
-        <div className="h-screen flex flex-col justify-center bg-gray-50 dark:bg-gray-800">
-            <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-5">
-                Actualizar usuario
-            </h1>
-            <form className="w-full max-w-md mx-auto" onSubmit={handleSubmit}>
-                <div className="mb-5">
-                    <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        nombre:
-                    </label>
-                    <input type="text" id="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={name} onChange={(e) => setName(e.target.value)} required />
-                </div>
-                
-                
-                <div className="mb-5">
-                    <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        email:
-                    </label>
-                    <input type="text" id="price" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-
-                
-                <div className="mb-5">
-                    <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        password:
-                    </label>
-                    <input type="password" id="password" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <div className="mb-5">
-                    <label htmlFor="direction" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        direccion:
-                    </label>
-                    <input type="text" id="direction" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={direction} onChange={(e) => setDirection(e.target.value)} required />
-                </div>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-6">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-300 dark:border-gray-700 w-full max-w-lg">
+                <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-5">
+                    Actualizar Usuario
+                </h1>
 
 
-                
-                <button type="submit" className="text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-700 dark:hover:bg-primary-800 dark:focus:ring-primary-900">
-                actualizar
-                </button>
-            </form>
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    {/* Nombre */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 dark:text-white">Nombre:</label>
+                        <input
+                            type="text"
+                            className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 dark:text-white">Email:</label>
+                        <input
+                            type="email"
+                            className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    {/* Contraseña */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 dark:text-white">Contraseña:</label>
+                        <input
+                            type="password"
+                            className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    {/* Dirección */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-900 dark:text-white">Dirección:</label>
+                        <input
+                            type="text"
+                            className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                            value={direction}
+                            onChange={(e) => setDirection(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    {/* Botón */}
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                    >
+                        Actualizar
+                    </button>
+                </form>
+            </div>
         </div>
     );
-}
+};
+ 
 
 export default UserEdit;
