@@ -1,26 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useContext } from "react";
 import { CartContext } from "../context/cartContext";
 import { AuthContext } from "../context/AuthContext";
-const Navbar = () => {
-  console.log("Token:", localStorage.getItem("token"));
+import api from "../apiconfig/api";
 
+const Navbar = () => {
   const { userId } = useContext(AuthContext);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const { cart } = useContext(CartContext);
-  
+  const { totalItemsInCart } = useContext(CartContext);
   const navigate = useNavigate();
 
-  
-  
+  const [showCategories, setShowCategories] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const menuRef = useRef(null); // 🔹 Referencia al menú de categorías
 
-  console.log("ID del usuario:", userId);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/categories");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error al obtener las categorías:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // 🔹 Cierra el menú si el usuario hace clic fuera de él
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowCategories(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.dispatchEvent(new Event("authChange")); //forzar actualización
+    window.dispatchEvent(new Event("authChange"));
     navigate("/login");
   };
 
@@ -33,23 +54,20 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900 transition-colors duration-300">
+    <nav className="bg-white border-b border-gray-200 dark:bg-gray-900 transition-colors duration-300 shadow-md">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a
-          href="/"
-          className="flex items-center space-x-3 rtl:space-x-reverse"
-        >
+        <Link to="/" className="flex items-center space-x-3">
           <img
             src="https://pio.edu.co/wp-content/uploads/2024/03/Logo-nuevo-PIO-2024.png"
             className="h-8"
-            alt="Flowbite Logo"
+            alt="Logo Tienda"
           />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white transition-colors duration-300">
-            Tienda tecnológica
+          <span className="text-2xl font-semibold dark:text-white">
+            Tienda Tecnológica
           </span>
-        </a>
+        </Link>
 
-        {/* Barra de búsqueda */}
+        {/* 🔎 Barra de búsqueda */}
         <form className="flex items-center space-x-2" onSubmit={handleSearch}>
           <input
             type="text"
@@ -66,120 +84,79 @@ const Navbar = () => {
           </button>
         </form>
 
-        <div
-          className="hidden w-full md:block md:w-auto"
-          id="navbar-default"
-        >
-          <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700 transition-colors duration-300"  >
-            <li>
-              <Link
-                to="/"
-                className="block py-2 px-3 text-white bg-primary-500 rounded md:bg-transparent md:text-primary-500 md:p-0 dark:text-white md:dark:text-primary-500"
-                aria-current="page"
-              >
-                Home
-              </Link>
-            </li>
+        <div className="hidden md:flex md:space-x-6 items-center">
+          <Link to="/" className="text-gray-900 hover:text-primary-500 dark:text-white">
+            Home
+          </Link>
 
-            {localStorage.getItem("token") ? (
-              <>
-                <li>
-                  <Link
-                    to="/categorys"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Categorías
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/admin"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Admin
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/productsCategoType"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent  transition-colors duration-300"
-                  >
-                    Ver productos por tipo
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/cart"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Carrito
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to={`/users/edit/${userId}`}
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Editar perfil
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link
-                    to="/categorys"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Categorías
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/productsCategoType"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Ver productos por tipo
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/login"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/register"
-                    className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                  >
-                    Register
-                  </Link>
-                </li>
-              </>
+          {/* 🔹 Menú de Categorías - SOLUCIÓN */}
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setShowCategories(!showCategories)}
+              className="text-gray-900 hover:text-primary-500 dark:text-white"
+            >
+              Categorías
+            </button>
+
+            {/* 🏷️ Menú desplegable */}
+            {showCategories && (
+              <div className="absolute left-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
+                {categories.length > 0 ? (
+                  categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/category/${category._id}`}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setShowCategories(false)} // 🔹 Cierra el menú al hacer clic
+                    >
+                      {category.name}
+                    </Link>
+                  ))
+                ) : (
+                  <p className="px-4 py-2 text-gray-500">Cargando...</p>
+                )}
+              </div>
             )}
-            {localStorage.getItem("token") &&
-            localStorage.getItem("role") === "admin" ? (
-              <li>
-                <Link
-                  to="/admin"
-                  className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-primary-500 md:p-0 dark:text-white md:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent transition-colors duration-300"
-                >
-                  Admin
-                </Link>
-              </li>
-            ) : null}
-          </ul>
+          </div>
+
+          <Link to="/productsCategoType" className="text-gray-900 hover:text-primary-500 dark:text-white">
+            Ver productos por tipo
+          </Link>
+
+          {localStorage.getItem("token") ? (
+            <>
+              <Link to="/admin" className="text-gray-900 hover:text-primary-500 dark:text-white">
+                Admin
+              </Link>
+              <Link to="/cart" className="relative text-gray-900 hover:text-primary-500 dark:text-white">
+                Carrito
+                {(totalItemsInCart ?? 0) > 0 && (
+                  <span className="absolute -top-2 -right-3 bg-red-500 text-white text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
+                    {totalItemsInCart}
+                  </span>
+                )}
+              </Link>
+
+              <Link to={`/users/edit/${userId}`} className="text-gray-900 hover:text-primary-500 dark:text-white">
+                Editar perfil
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-gray-900 hover:text-primary-500 dark:text-white"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-gray-900 hover:text-primary-500 dark:text-white">
+                Login
+              </Link>
+              <Link to="/register" className="text-gray-900 hover:text-primary-500 dark:text-white">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
@@ -187,3 +164,5 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+

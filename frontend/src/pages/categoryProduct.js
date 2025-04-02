@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import api from "../apiconfig/api";
 import ProductCard from "../components/ProductCard";
+const { CartContext } = require("../context/cartContext");
 
 
 const CatagoryProduct = () => {
@@ -12,6 +13,7 @@ const CatagoryProduct = () => {
   const { id } = useParams(); // Obtiene el ID de la categoría desde la URL
   const [types, setTypes] = useState([]);
   const [selectedType, setSelectedType] = useState("");
+  const { cart } = useContext(CartContext);
 
   // Fetch de productos y categorías
   useEffect(() => {
@@ -27,7 +29,7 @@ const CatagoryProduct = () => {
     fetchProductos();
     fetchTypes();
 
-  }, [id]);
+  }, [id,cart]);
   const fetchProductos = async () => {
     try {
       const response = await api.get(`/products/category/${id}`);

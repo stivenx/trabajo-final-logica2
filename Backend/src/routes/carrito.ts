@@ -1,5 +1,5 @@
 import express from "express";
-import { getCart, addToCart, removeFromCart, clearCart } from "../controllers/carritoController";
+import { getCart, addToCart, removeFromCart, clearCart,updateItemQuantity } from "../controllers/carritoController";
 
 const router = express.Router();
 
@@ -14,5 +14,8 @@ router.delete("/:userId/:productId", removeFromCart);
 
 // Vaciar el carrito
 router.delete("/:userId", clearCart);
+
+// Actualizar la cantidad de un producto en el carrito
+router.patch("/:userId/:productId", updateItemQuantity);
 
 export default router;

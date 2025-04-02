@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import api from "../apiconfig/api";
 import ProductCard from "../components/ProductCard";
+import { CartContext } from "../context/cartContext";
 
 const ProductSearch = () => {
   const location = useLocation();
@@ -9,7 +10,7 @@ const ProductSearch = () => {
   const [products, setProducts] = useState([]); // Para almacenar los resultados
   const [loading, setLoading] = useState(false); // Indicador de carga
   const [error, setError] = useState(""); // Manejo de errores
-
+  const { cart } = useContext(CartContext);
   // Extraer el parámetro `name` de la URL
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -19,7 +20,7 @@ const ProductSearch = () => {
     if (nameParam.length >= 3) {
       fetchProducts(nameParam);
     }
-  }, [location.search]);
+  }, [location.search,cart]);
 
   // Función para buscar productos
   const fetchProducts = async (searchQuery) => {

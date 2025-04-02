@@ -10,6 +10,7 @@ const AdminEdit = () => {
     const [stock, setStock] = useState(0);
     const [image, setImageUrl] = useState("");
     const [type, setType] = useState("");
+    const [discount, setDiscount] = useState(0);
     const [error, setError] = useState("");
     const [selecteTypes, setSelectedTypes] = useState([]);
     const [selecteCategory, setSelectedCategory] = useState([]);
@@ -37,6 +38,11 @@ const AdminEdit = () => {
         e.preventDefault();
         setError("");
 
+        if(discount < 0 || discount > 100 || isNaN(discount)) {
+            setError("El descuento debe estar entre 0 y 100.");
+            return;
+        }
+
         try {
             await api.patch(`/products/${id}`, {
                 name,
@@ -46,6 +52,7 @@ const AdminEdit = () => {
                 category,
                 image,
                 type,
+                discount
             });
 
             navigate("/admin");
@@ -88,6 +95,8 @@ const AdminEdit = () => {
             setStock(response.data.stock);
             setImageUrl(response.data.image);
             setType(response.data.type._id);
+            setDiscount(response.data.discount);
+
         } catch (error) {
             console.error("Error al obtener el producto:", error);
         }
@@ -220,6 +229,20 @@ const AdminEdit = () => {
                                 rows="4"
                                 value={image}
                                 onChange={(e) => setImageUrl(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {/* Descuento */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 dark:text-white">Descuento:</label>
+                            <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                                value={discount}
+                                onChange={(e) => setDiscount(Math.max(0, Math.min(100, parseInt(e.target.value))))}
                                 required
                             />
                         </div>

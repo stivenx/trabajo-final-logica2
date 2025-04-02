@@ -31,7 +31,8 @@ const AdminCreate = () => {
                 stock,
                 category,
                 image,
-                type
+                type,
+                discount: 0
             });
     
             console.log(response.data);
@@ -209,7 +210,6 @@ const AdminCreate = () => {
                 </form>
             </div>
         </div>
-    
 );
 };
     

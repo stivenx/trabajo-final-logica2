@@ -1,9 +1,10 @@
 import React, { useEffect , useState} from "react";
 import api from "../apiconfig/api";
 import ProductCard from "../components/ProductCard";
-
+import { CartContext } from "../context/cartContext";
 const Home = () => {
     const [products, setProducts] = React.useState([]);
+    const {cart} = React.useContext(CartContext);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -16,7 +17,7 @@ const Home = () => {
         };
 
         fetchProducts();
-    }, []);
+    }, [cart]);
 
     return (
         <section className="bg-gray-50 dark:bg-gray-900 py-16">

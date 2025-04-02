@@ -8,6 +8,7 @@ const Users = () => {
     //useAdminRedirect();
    
     const [users, setUsers] = React.useState([]);
+    const [response, setResponse] = useState('');
 
    
    
@@ -16,7 +17,13 @@ const Users = () => {
         const response = await api.delete(`/users/${userId}`);
         if (response.status === 200) {
             setUsers(users.filter((user) => user._id !== userId));
-            alert('El usuaroi se ha eliminado correctamente');
+            setResponse('✅ El usuario se ha eliminado correctamente');
+                window.scrollTo({ top: 0, behavior: "smooth" });
+
+                setTimeout(() => {
+                    setResponse("");
+                }, 5000);
+            
         } else {
             console.error('Error al eliminar el producto:', response.data);
         }
@@ -44,7 +51,12 @@ const Users = () => {
             <div className="flex justify-between items-center px-4 py-2 bg-primary-100 dark:bg-primary-800">
                 <h2 className="text-xl font-semibold text-primary-900 dark:text-white">
                     users</h2>           
-               
+                 {/* Mensaje de éxito */}
+                {response && (
+                    <div className="mt-3 p-3 text-sm text-green-700 bg-green-100 border border-green-400 rounded-lg dark:bg-green-900 dark:text-green-300 dark:border-green-500 text-center transition-colors duration-300">
+                        {response}
+                    </div>
+                )}
                 <a href="" className="px-4 py-2 bg-primary-700 text-white
                 hover:bg-primary-600">
                     Add user

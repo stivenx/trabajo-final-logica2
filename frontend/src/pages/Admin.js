@@ -76,6 +76,7 @@ const Admin = () => {
                         <th className="px-6 py-3">Tipo</th>
                         <th className="px-6 py-3">Stock</th>
                         <th className="px-6 py-3">Image</th>
+                        <th className="px-6 py-3">Discount</th>
                         <th className="px-6 py-3">Edit</th>
                         <th className="px-6 py-3">Delete</th>
                     </tr>
@@ -92,6 +93,7 @@ const Admin = () => {
                             <td className="px-6 py-4">
                                 <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-full" />
                             </td>
+                            <td className="px-6 py-4">{product.discount}%</td>
                             <td className="px-6 py-4">
                                 <a href={`admin/edit/${product._id}`} className="font-medium text-blue-500 hover:underline dark:text-blue-400 transition-colors duration-300">
                                     ✏️ Edit

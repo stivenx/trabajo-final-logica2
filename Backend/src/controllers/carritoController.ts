@@ -173,3 +173,70 @@ export const clearCart: RequestHandler = async (req, res) => {
     }
 };
 
+
+export const updateItemQuantity: RequestHandler = async (req, res) => {
+    try {
+        const { userId, productId } = req.params;
+        const { quantity } = req.body;
+
+        if (!quantity || quantity < 1) {
+            res.status(400).json({ message: "La cantidad debe ser al menos 1." });
+            return;
+        }
+
+        // Buscar el producto y validar stock
+        const product = await Product.findById(productId);
+        if (!product) {
+            res.status(404).json({ message: "Producto no encontrado." });
+            return;
+        }
+
+        console.log(`📦 Producto ${productId}: Stock disponible ${product.stock}, Cantidad solicitada ${quantity}`);
+
+        // Buscar el carrito del usuario
+        const cart = await Cart.findOne({ user: userId });
+        if (!cart) {
+            res.status(404).json({ message: "Carrito no encontrado." });
+            return;
+        }
+
+        // Buscar el producto dentro del carrito
+        const cartItem = cart.items.find((item) => item.product.toString() === productId);
+        if (!cartItem) {
+            res.status(404).json({ message: "Producto no encontrado en el carrito." });
+            return;
+        }
+
+        // Validar si la nueva cantidad es mayor al stock disponible + lo que ya tenía en el carrito
+        if (quantity > product.stock + cartItem.quantity) {
+            res.status(400).json({ message: `Stock insuficiente. Máximo disponible: ${product.stock + cartItem.quantity}` });
+            return;
+        }
+
+        // Diferencia entre la nueva cantidad y la actual
+        const quantityDifference = quantity - cartItem.quantity;
+        console.log(`🔄 Diferencia de cantidad: ${quantityDifference}`);
+
+        if (quantityDifference > 0) {
+            // Aumentar cantidad en el carrito y reducir stock
+            product.stock -= quantityDifference;
+        } else {
+            // Disminuir cantidad en el carrito y restaurar stock
+            product.stock += Math.abs(quantityDifference);
+        }
+
+        // Guardar cambios
+        await product.save();
+
+        // Actualizar la cantidad en el carrito
+        cartItem.quantity = quantity;
+        await cart.save();
+
+        console.log(`✅ Nueva cantidad en carrito: ${cartItem.quantity}, Stock actualizado: ${product.stock}`);
+
+        res.json({ message: "Cantidad actualizada en el carrito.", cart });
+    } catch (error) {
+        console.error("❌ Error al actualizar cantidad en el carrito:", error);
+        res.status(500).json({ message: "Error interno del servidor." });
+    }
+};

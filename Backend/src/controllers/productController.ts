@@ -6,79 +6,72 @@ import mongoose from "mongoose";
 
 export const getAllProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const products = await Product.find().populate('category') .populate('type');
-        res.status(200).json(products);
+        const products = await Product.find().populate('category').populate('type');
+
+        // Calcular el precio final con descuento, asegurando que discount no sea undefined
+        const productsWithDiscount = products.map(product => ({
+            ...product.toObject(),
+            finalPrice: product.price - (product.price * ((product.discount ?? 0) / 100))
+        }));
+
+        res.status(200).json(productsWithDiscount);
     } catch (error) {
+        console.error("Error obteniendo productos:", error);
         res.status(500).json({ error: "Error al obtener los productos" });
     }
 };
 
+
 export const getProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const product = await Product.findById(id).populate('category') .populate('type');
-        res.status(200).json(product);
+        const product = await Product.findById(id).populate('category').populate('type');
+
+        if (!product) {
+            res.status(404).json({ error: "Producto no encontrado" });
+            return;
+        }
+
+        const productWithDiscount = {
+            ...product.toObject(),
+            finalPrice: product.price - (product.price * (product.discount ?? 0 / 100))
+        };
+
+        res.status(200).json(productWithDiscount);
     } catch (error) {
+        console.error("Error obteniendo el producto:", error);
         res.status(500).json({ error: "Error al obtener el producto" });
     }
 };
 
 
 
+
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, description, price, category, stock, image, type } = req.body;
+        const { name, description, price, category, stock, image, type, discount } = req.body;
 
-        // Verifica si la categoría y el tipo están presentes
-        if (!category) {
-            res.status(400).json({ message: "La categoría es obligatoria" });
-            return;
-        }
-        if (!type) {
-            res.status(400).json({ message: "El tipo es obligatorio" });
+        if (!category || !mongoose.Types.ObjectId.isValid(category)) {
+            res.status(400).json({ message: "Categoría no válida" });
             return;
         }
 
-        // Verificar si los IDs son válidos antes de hacer la consulta en la base de datos
-        if (!mongoose.Types.ObjectId.isValid(category)) {
-            res.status(400).json({ message: "El ID de la categoría no es válido" });
-            return;
-        }
-        if (!mongoose.Types.ObjectId.isValid(type)) {
-            res.status(400).json({ message: "El ID del tipo no es válido" });
+        if (!type || !mongoose.Types.ObjectId.isValid(type)) {
+            res.status(400).json({ message: "Tipo no válido" });
             return;
         }
 
-        try {
-            const categoryExists = await Category.findById(category);
-            if (!categoryExists) {
-                res.status(404).json({ message: "Categoría no encontrada" });
-                return;
-            }
-        } catch (error) {
-            console.error("Error en la búsqueda de la categoría:", error);
-            res.status(500).json({ message: "Error interno al buscar la categoría" });
+        if (discount && (discount < 0 || discount > 100)) {
+            res.status(400).json({ message: "El descuento debe estar entre 0 y 100" });
             return;
         }
 
-        try {
-            const typeExists = await Type.findById(type);
-            if (!typeExists) {
-                res.status(404).json({ message: "Tipo no encontrado" });
-                return;
-            }
-        } catch (error) {
-            console.error("Error en la búsqueda del tipo:", error);
-            res.status(500).json({ message: "Error interno al buscar el tipo" });
-            return;
-        }
-
-        // Crear el producto
-        const product = new Product({ name, description, price, category, stock, image, type });
+        const product = new Product({ name, description, price, category, stock, image, type, discount: discount || 0 });
         await product.save();
+
         res.status(201).json(product);
     } catch (error) {
-        console.error("Error en la creación del producto:", error);
+        console.error("Error al crear producto:", error);
         res.status(500).json({ message: "Error al crear el producto" });
     }
 };
@@ -88,60 +81,49 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, description, price, category, stock, image, type } = req.body;
+        const { name, description, price, category, stock, image, type, discount } = req.body;
 
-        if (!category) {
-            res.status(400).json({ message: "La categoría es obligatoria" });
+        // Verificar si el ID del producto es válido
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            res.status(400).json({ message: "ID de producto no válido" });
             return;
         }
 
-        if (!mongoose.Types.ObjectId.isValid(category)) {
-            res.status(400).json({ message: "El ID de la categoría no es válido" });
+        // Validar el descuento (debe estar entre 0 y 100)
+        if (discount !== undefined && (discount < 0 || discount > 100)) {
+            res.status(400).json({ message: "El descuento debe estar entre 0 y 100" });
             return;
         }
 
-        try {
-            const categoryExists = await Category.findById(category);
-            if (!categoryExists) {
-                res.status(404).json({ message: "Categoría no encontrada" });
-                return;
-            }
-        } catch (error) {
-            res.status(500).json({ message: "Error al buscar la categoría" });
+        // Verificar si la categoría y el tipo existen
+        if (category && !mongoose.Types.ObjectId.isValid(category)) {
+            res.status(400).json({ message: "ID de categoría no válido" });
+            return;
+        }
+        if (type && !mongoose.Types.ObjectId.isValid(type)) {
+            res.status(400).json({ message: "ID de tipo no válido" });
             return;
         }
 
-        if (!type) {
-            res.status(400).json({ message: "El tipo es obligatorio" });
-            return;
-        }
-
-        if (!mongoose.Types.ObjectId.isValid(type)) {
-            res.status(400).json({ message: "El ID del tipo no es válido" });
-            return;
-        }
-
-        try {
-            const typeExists = await Type.findById(type);
-            if (!typeExists) {
-                res.status(404).json({ message: "Tipo no encontrado" });
-                return;
-            }
-        } catch (error) {
-            res.status(500).json({ message: "Error al buscar el tipo" });
-            return;
-        }
-
-        const product = await Product.findByIdAndUpdate(
+        // Buscar y actualizar el producto
+        const updatedProduct = await Product.findByIdAndUpdate(
             id,
-            { name, description, price, category, stock, image, type },
-            { new: true }
+            { name, description, price, category, stock, image, type, discount },
+            { new: true } // Devuelve el producto actualizado
         );
-        res.status(200).json(product);
+
+        if (!updatedProduct) {
+            res.status(404).json({ message: "Producto no encontrado" });
+            return;
+        }
+
+        res.status(200).json(updatedProduct);
     } catch (error) {
+        console.error("Error al actualizar el producto:", error);
         res.status(500).json({ message: "Error al actualizar el producto" });
     }
 };
+
 
 export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
     try {

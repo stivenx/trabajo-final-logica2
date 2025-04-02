@@ -4,6 +4,7 @@ import "./index.css";
 import './App.css';
 import  { CartProvider } from "./context/cartContext";
 import { AuthProvider } from "./context/AuthContext";
+import CartModal from './context/cartModal';
 
 
 //Pages
@@ -37,6 +38,7 @@ function App() {
     <CartProvider>
     <Router>
       <Navbar />
+      <CartModal />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
