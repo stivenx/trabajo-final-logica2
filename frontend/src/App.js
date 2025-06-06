@@ -25,7 +25,11 @@ import CategoryEdit from './pages/CategoryEdit';
 import ProductosPorCategoriaYTipo from './pages/productsCategoType';
 import ProductSearch from './pages/searchProducts';
 import CartPage from './pages/cartPage';
-
+import Prueba from './pages/rpueba';
+import Create2 from './pages/create2';
+import ProductList from './pages/mostrarPruebas';
+import Productid from './pages/pruebaid';
+import  ProductoUpdateForm from './pages/editprueba';
 
 //Components
 import Navbar from './components/Navbar';
@@ -57,6 +61,12 @@ function App() {
         <Route path="/productsCategoType" element={<ProductosPorCategoriaYTipo />} />
         <Route path="/search" element={<ProductSearch />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/prueba" element={<Prueba />} />
+        <Route path="/create2" element={<Create2 />} />
+        <Route path="/products" element={<ProductList />} />
+        <Route path="/prueba/:id" element={<Productid />} />
+        <Route path="/edit/:id" element={<ProductoUpdateForm />} />
+
 
         
 

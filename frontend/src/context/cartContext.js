@@ -92,7 +92,8 @@ export const CartProvider = ({ children }) => {
     
             if (response.status === 200) {
                 console.log("Cantidad actualizada correctamente");
-                await fetchCart(userId); // 🔹 Actualiza el carrito después del cambio
+               await fetchCart(userId); // 🔹 Actualiza el carrito después del cambio
+                //fetchCart(userId).filter((item) => item.product._id !== productId);
             } else {
                 console.warn("No se pudo actualizar la cantidad. Respuesta del servidor:", response.data);
             }

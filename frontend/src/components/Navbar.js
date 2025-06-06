@@ -9,10 +9,13 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { totalItemsInCart } = useContext(CartContext);
   const navigate = useNavigate();
-
+ const [productos, setProductos] = useState([]);
+ const[showproducts, setShowProducts] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
   const [categories, setCategories] = useState([]);
   const menuRef = useRef(null); // 🔹 Referencia al menú de categorías
+  const menuRef2 = useRef(null); // 🔹 Referencia al menú de categorías
+  const {toggleCart} = useContext(CartContext);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -26,11 +29,36 @@ const Navbar = () => {
     fetchCategories();
   }, []);
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await api.get("/products");
+        setProductos(response.data);
+      } catch (error) {
+        console.error("Error al obtener los productos:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
+    
+   
   // 🔹 Cierra el menú si el usuario hace clic fuera de él
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowCategories(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef2.current && !menuRef2.current.contains(event.target)) {
+        setShowProducts(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -88,6 +116,8 @@ const Navbar = () => {
           <Link to="/" className="text-gray-900 hover:text-primary-500 dark:text-white">
             Home
           </Link>
+          <button
+           onClick={toggleCart}  className="text-gray-500 hover:text-gray-700">carrito rapido</button>
 
           {/* 🔹 Menú de Categorías - SOLUCIÓN */}
           <div className="relative" ref={menuRef}>
@@ -119,8 +149,44 @@ const Navbar = () => {
             )}
           </div>
 
+          <div className="relative" ref={menuRef2}>
+            <button
+              onClick={() => setShowProducts(!showproducts)}
+              className="text-gray-900 hover:text-primary-500 dark:text-white"
+            >
+              productos
+            </button>
+
+            {/* 🏷️ Menú desplegable */}
+            {showproducts && (
+              <div className="absolute left-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
+                {productos.length > 0 ? (
+                  productos.map((product) => (
+                    <Link
+                      key={product.id}
+                      to={`/product/${product._id}`}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setShowProducts(false)} // 🔹 Cierra el menú al hacer clic
+                    >
+                      {product.name}
+                    </Link>
+                  ))
+                ) : (
+                  <p className="px-4 py-2 text-gray-500">Cargando...</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <Link to="/productsCategoType" className="text-gray-900 hover:text-primary-500 dark:text-white">
             Ver productos por tipo
+          </Link>
+
+          <Link to="/prueba" className="text-gray-900 hover:text-primary-500 dark:text-white">
+            Prueba
+          </Link>
+          <Link to="/products" className="text-gray-900 hover:text-primary-500 dark:text-white">
+            Pruebaimagenes
           </Link>
 
           {localStorage.getItem("token") ? (

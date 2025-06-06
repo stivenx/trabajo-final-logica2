@@ -4,7 +4,16 @@ import api from '../apiconfig/api';
 const Admin = () => {
     const [products, setProducts] = useState([]);
     const [response, setResponse] = useState("");
+   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+      if (search.length >= 3) {
+          searchfetchProducts(search);
+      }else{
+         fetchProducts();
+      }
+
+  })
     const handleDelete = async (productId) => {
         try {
             const response = await api.delete(`/products/${productId}`);
@@ -25,16 +34,30 @@ const Admin = () => {
     };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await api.get('/products');
-                setProducts(response.data);
-            } catch (error) {
-                console.error('Error al obtener los productos:', error);
-            }
-        };
+        
         fetchProducts();
     }, []);
+
+    const fetchProducts = async () => {
+        try {
+            const response = await api.get('/products');
+            setProducts(response.data);
+        } catch (error) {
+            console.error('Error al obtener los productos:', error);
+        }
+    };
+   
+    const searchfetchProducts = async (search) => {
+        
+        try {
+          const response = await api.get(`/products/search/${search}`);
+          setProducts(response.data);
+        } catch (err) {
+          
+        } finally {
+        
+        }
+      };
 
     return (
         <div className="relative overflow-x-auto shadow-md p-4 bg-white dark:bg-gray-900 transition-colors duration-300">
@@ -43,6 +66,17 @@ const Admin = () => {
                 <h2 className="text-2xl font-semibold text-primary-900 dark:text-white">
                     Products
                 </h2>
+
+                {/* Buscador */}
+                <div className="mt-4">
+                    <input
+                        type="text"
+                        placeholder="Buscar producto..."
+                        className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white transition-colors duration-300"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
 
                 {/* Mensaje de éxito */}
                 {response && (

@@ -67,7 +67,7 @@ const CatagoryProduct = () => {
   if (loading) return <div className="text-center py-10 text-lg">Cargando productos...</div>;
   if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
 
-
+ 
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-16">
       {/* Selector de tipo de producto */}
@@ -87,6 +87,7 @@ const CatagoryProduct = () => {
       </div>
       <div className="flex flex-wrap items-center justify-center">
         <h1 className="w-full text-5xl font-bold text-center p-8 dark:text-white ">{category.name} </h1>
+        <p className="w-full text-2xl font-bold text-center p-8 dark:text-white ">{products.filter(product => product.stock > 0).length}</p>
         {products.length === 0 ? (
           <p className="text-center text-gray-500">No hay productos de este tipo</p>
         ) : (
