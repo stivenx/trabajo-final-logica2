@@ -6,7 +6,7 @@ export interface IProduct extends Document {
     price: number;
     category: Schema.Types.ObjectId;
     stock: number;
-    image?: string;
+    images: string[];
     type: Schema.Types.ObjectId;
     discount?: number
     
@@ -19,7 +19,7 @@ const productSchema = new Schema<IProduct>({
     price: { type: Number, required: true },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     stock: { type: Number, required: true },
-    image: { type: String },
+    images: [{ type: String }],
     type: { type: Schema.Types.ObjectId, ref: "Type", required: true },
     discount: { type: Number, default: 0 },
 });
