@@ -17,11 +17,38 @@ export const createPrueba = async (req: Request, res: Response) => {
   try {
     const { name, description, price } = req.body;
 
-    // Guardar rutas de las imágenes subidas
-    const imagePaths = req.files
-      ? (req.files as Express.Multer.File[]).map((file) => file.path)
-      : [];
 
+    const existingPrueba = await prueba.findOne({ name });
+
+    if (existingPrueba) {
+     
+
+      if(req.files){
+        
+        for (let file of req.files as Express.Multer.File[]) {
+          existingPrueba.images.push(`uploads/${file.filename}`);
+        }
+      }
+      
+      await existingPrueba.save();
+      res.status(200).json(existingPrueba);
+      return;
+    }else{
+       // Guardar rutas de las imágenes subidas
+    
+    const imagePaths = req.files
+      ? (req.files as Express.Multer.File[]).map((file) => `uploads/${file.filename}`)
+      : []; 
+
+      /*let imagePaths: string[] = [];
+
+        if (req.files) {
+          const files = req.files as Express.Multer.File[];
+          for (let i = 0; i < files.length; i++) {
+            imagePaths.push(`uploads/${files[i].filename}`);
+          }
+        }
+        */
     const nuevo = new prueba({
       name,
       description,
@@ -31,6 +58,9 @@ export const createPrueba = async (req: Request, res: Response) => {
 
     const saved = await nuevo.save();
     res.status(201).json(saved);
+
+    }
+   
   } catch (error) {
     console.error("Error al crear producto:", error);
     res.status(500).json({ message: "Error al crear el producto" });
@@ -58,7 +88,97 @@ export const getPrueba = async (req: Request, res: Response) => {
   }
 };
 
+/*
+para la primer imagen
+export const getPrueba = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
 
+    // Buscar el producto y devolver solo los campos deseados
+    const producto = await prueba.findById(
+      id,
+      {
+        name: 1,
+        description: 1,
+        price: 1,
+        images: { $slice: 1 } // ← Devuelve solo la PRIMERA imagen
+      }
+    );
+
+    if (!producto) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    res.status(200).json(producto);
+  } catch (error) {
+    console.error("Error al obtener producto:", error);
+    res.status(500).json({ message: "Error al obtener el producto" });
+  }
+};
+
+*/
+
+/*
+otra forma para obtener la primera imagen
+export const getPrueba = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const producto = await prueba.findById(id);
+    if(!producto){
+      res.status(404).json({ message: "Producto no encontrado" });
+      return;
+    }
+     // Solo tomar la primera imagen
+    const productoConPrimeraImagen = {
+      ...producto.toObject(),
+      images: producto.images.length > 0 ? [producto.images[0]] : [],
+    };
+    res.status(200).json(productoConPrimeraImagen);
+  } catch (error) {
+    console.error("Error al obtener producto:", error);
+    res.status(500).json({ message: "Error al obtener el producto" });
+  }
+};*/
+
+
+/*
+para no tener que hacer un map sino que la primera imagen venga
+export const getPrueba = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const producto = await prueba.findById(
+      id,
+      {
+        name: 1,
+        description: 1,
+        price: 1,
+        images: 1
+      }
+    );
+
+    if (!producto) {
+      return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    // Tomamos la primera imagen
+    const respuesta = {
+      _id: producto._id,
+      name: producto.name,
+      description: producto.description,
+      price: producto.price,
+      image: producto.images.length > 0 ? producto.images[0] : null
+    };
+
+    res.status(200).json(respuesta);
+  } catch (error) {
+    console.error("Error al obtener producto:", error);
+    res.status(500).json({ message: "Error al obtener el producto" });
+  }
+};
+
+
+*/
 
 // import fs from "fs"; // Descomenta si deseas eliminar archivos físicamente
 
@@ -97,6 +217,14 @@ export const updatePrueba = async (req: Request, res: Response) => {
           !imagesToDelete.some((toDelete: string) => img.includes(toDelete))
       );
 
+      /*
+      if (Array.isArray(imagesToDelete) && imagesToDelete.length > 0) {
+        currentImages = currentImages.filter(
+          (img: string) => !imagesToDelete.includes(img)
+        );
+      }
+      */
+
       // Eliminar físicamente las imágenes del sistema de archivos (opcional)
       
      const basePath = path.join(__dirname, "../../"); // ruta base del proyecto
@@ -107,12 +235,22 @@ export const updatePrueba = async (req: Request, res: Response) => {
         if (err) console.error("Error al eliminar archivo:", err);
       });
      });
+
     }
 
+   /*
 
+    for (const imgPath of imagesToDelete) {
+      const fullPath = path.join(basePath, imgPath);
+      fs.unlink(fullPath, (err) => {
+        if (err) console.error("Error al eliminar archivo:", err);
+      });
+    }
+
+   */
     // Obtener nuevas imágenes subidas
     const newImagePaths = req.files
-      ? (req.files as Express.Multer.File[]).map((file) => file.path)
+      ? (req.files as Express.Multer.File[]).map((file) => `uploads/${file.filename}`)
       : [];
 
     // Combinar imágenes finales
@@ -138,6 +276,25 @@ export const updatePrueba = async (req: Request, res: Response) => {
 export const deletePrueba = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+
+    const producto = await prueba.findById(id);
+    if (!producto) {
+      res.status(404).json({ message: "Producto no encontrado" });
+      return;
+    }
+
+    const imagenes = producto.images
+
+    for (const imgPath of imagenes) {
+      const fullPath = path.join(__dirname, "../../", imgPath); // ajusta si guardas rutas absolutas
+      try {
+        await fs.promises.unlink(fullPath);
+      } catch (err) {
+         const error = err as Error;
+         console.warn(`No se pudo eliminar la imagen ${imgPath}: ${error.message}`);
+      }
+    }
+    
 
     const deleted = await prueba.findByIdAndDelete(id);
 

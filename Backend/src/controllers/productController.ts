@@ -3,6 +3,30 @@ import Product from "../models/product";
 import Category from "../models/category";
 import Type from "../models/type";
 import mongoose from "mongoose";
+import Comentarios from "../models/comentarios";
+import path from "path";
+import fs from "fs";
+import multer from "multer";
+
+const routesimages = path.join(__dirname, "../../products");
+if(!fs.existsSync(routesimages)){
+    fs.mkdirSync(routesimages,{recursive: true});
+    
+}
+
+
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, "../../products"));
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + "-" + file.originalname);
+    },
+});
+
+export const upload = multer({ storage });
+
 
 export const getAllProducts = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -24,6 +48,7 @@ export const getAllProducts = async (req: Request, res: Response): Promise<void>
 
 export const getProduct = async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log("Entrando a getProduct con URL:", req.originalUrl);
         const { id } = req.params;
         const product = await Product.findById(id).populate('category').populate('type');
 
@@ -49,7 +74,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, description, price, category, stock, image, type, discount } = req.body;
+        const { name, description, price, category, stock, type, discount } = req.body;
 
         if (!category || !mongoose.Types.ObjectId.isValid(category)) {
             res.status(400).json({ message: "Categoría no válida" });
@@ -66,7 +91,9 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        const product = new Product({ name, description, price, category, stock, image, type, discount: discount || 0 });
+       const images = req.files ? (req.files as Express.Multer.File[]).map(file => `products/${file.filename}`) : [];
+
+        const product = new Product({ name, description, price, category, stock, images, type, discount: discount || 0 });
         await product.save();
 
         res.status(201).json(product);
@@ -81,7 +108,13 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, description, price, category, stock, image, type, discount } = req.body;
+        let { name, description, price, category, stock, type, discount,imagenesConservar } = req.body;
+
+        const existingProduct = await Product.findById(id);
+        if (!existingProduct) {
+            res.status(404).json({ message: "Producto no encontrado" });
+            return;
+        }
 
         // Verificar si el ID del producto es válido
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -105,19 +138,43 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
             return;
         }
 
-        // Buscar y actualizar el producto
-        const updatedProduct = await Product.findByIdAndUpdate(
-            id,
-            { name, description, price, category, stock, image, type, discount },
-            { new: true } // Devuelve el producto actualizado
-        );
-
-        if (!updatedProduct) {
-            res.status(404).json({ message: "Producto no encontrado" });
-            return;
+        if(!Array.isArray(imagenesConservar)){
+            imagenesConservar = imagenesConservar ? [imagenesConservar] : [];
         }
 
-        res.status(200).json(updatedProduct);
+        const imagenesConservaran = new Set(imagenesConservar || []);
+
+        const eliminar = existingProduct.images.filter((image) => !imagenesConservaran.has(image));
+        const guardar = existingProduct.images.filter((image) => imagenesConservaran.has(image));
+
+        for(const img  of eliminar){
+            const fullPath = path.join(__dirname, "../../", img);
+            try {
+                if(fs.existsSync(fullPath))
+                    await fs.promises.unlink(fullPath);
+            } catch (err) {
+                const error = err as Error;
+                console.warn(`No se pudo eliminar la imagen ${img}: ${error.message}`);
+            }
+        }
+
+        if (req.files) {
+            const newImages = (req.files as Express.Multer.File[]).map(file => `products/${file.filename}`);
+            guardar.push(...newImages);
+        }
+
+        existingProduct.name = name || existingProduct.name;
+        existingProduct.description = description || existingProduct.description;
+        existingProduct.price = price || existingProduct.price;
+        existingProduct.category = category || existingProduct.category;
+        existingProduct.stock = stock || existingProduct.stock;
+        existingProduct.type = type || existingProduct.type;
+        existingProduct.discount = discount !== undefined ? discount : existingProduct.discount;
+        existingProduct.images = guardar;
+
+        await existingProduct.save();
+
+        res.status(200).json();
     } catch (error) {
         console.error("Error al actualizar el producto:", error);
         res.status(500).json({ message: "Error al actualizar el producto" });
@@ -128,6 +185,21 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
 export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
+        const comentarios = await Comentarios.find({ product: id });
+        for(const comentario of comentarios){
+            if(comentario.images){
+                for( const imagenes of comentario.images){
+                    const fullPath = path.join(__dirname, "../../", imagenes);
+                    try {
+                        if(fs.existsSync(fullPath))
+                            await fs.promises.unlink(fullPath);
+                    } catch (err) {
+                        const error = err as Error;
+                        console.warn(`No se pudo eliminar la imagen ${imagenes}: ${error.message}`);
+                    }
+                }
+            }
+        }
         await Product.findByIdAndDelete(id);
         res.status(200).json({ message: "Producto eliminado correctamente" });
     } catch (error) {
@@ -179,3 +251,45 @@ export const getProductsByCategoryByType = async (req: Request, res: Response): 
       res.status(500).json({ error: "Error al buscar los productos" });
     }
   };
+
+  export const searchProductsLimit = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { name } = req.params;
+      if (!name) {
+        res.status(400).json({ error: "El nombre del producto es requerido" });
+        return;
+      }
+      const products = await Product.find({ name: { $regex: name, $options: "i" } }).populate('category',"name").populate('type',"name").limit(3);
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ error: "Error al buscar los productos" });
+    }
+  };
+
+
+export const getProductsByCategoryByType2 = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { categoryId } = req.params;
+    const { typeId } = req.query;
+
+    // Creamos el filtro base por categoría
+    const filter: any = { category: categoryId };
+
+    // Si vienen varios tipos (separados por coma)
+    if (typeId) {
+      const ids = (typeId as string).split(",").map((id) => id.trim());
+      filter.type = { $in: ids }; // usamos $in para aceptar múltiples tipos
+    }
+
+    const products = await Product.find(filter)
+      .populate("category")
+      .populate("type");
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error al obtener productos por categoría y tipos:", error);
+    res.status(500).json({ error: "Error al obtener los productos por categoría y tipo" });
+  }
+};
+
+

@@ -155,22 +155,32 @@ export const removeFromCart: RequestHandler = async (req, res): Promise<void> =>
 
 // Vaciar el carrito
 export const clearCart: RequestHandler = async (req, res) => {
-    try {
-        const { userId } = req.params;
+  try {
+    const { userId } = req.params;
 
-        const cart = await Cart.findOne({ user: userId });
-        if (!cart) {
-            res.status(404).json({ message: "Carrito no encontrado" });
-            return;
-        }
-
-        cart.items = [];
-        await cart.save();
-
-        res.json({ message: "Carrito vaciado correctamente" });
-    } catch (error) {
-        res.status(500).json({ message: "Error al vaciar el carrito", error });
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      res.status(404).json({ message: "Carrito no encontrado" });
+      return;
     }
+
+    // 🔹 Recorremos los items y devolvemos el stock a cada producto
+    for (const item of cart.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock += item.quantity; // devolvemos cantidad
+        await product.save();
+      }
+    }
+
+    // 🔹 Vaciar el carrito
+    cart.items = [];
+    await cart.save();
+
+    res.json({ message: "Carrito vaciado correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al vaciar el carrito", error });
+  }
 };
 
 

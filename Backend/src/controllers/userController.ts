@@ -1,5 +1,6 @@
 import { Response, Request } from "express";
 import User from "../models/user";
+import { error } from "console";
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -53,7 +54,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user || !(await bcrypt.compare(password, user.password))) {
-             res.status(401).json({ message: 'Credenciales inválidas' });
+             res.status(401).json({ error: 'Credenciales inválidas por eso no se pudo iniciar sesión' });
              return;
         }
         const token = jwt.sign({ id: user._id, }, process.env.JWT_SECRET);
