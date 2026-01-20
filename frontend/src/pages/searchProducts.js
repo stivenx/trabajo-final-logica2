@@ -20,8 +20,11 @@ const ProductSearch = () => {
     if (nameParam.length >= 3) {
       fetchProducts(nameParam);
     }
-  }, [location.search,cart]);
-
+  }, [location.search]);
+  
+  useEffect(() => {
+    fetchProducts(query);
+  },[cart]);
   // Función para buscar productos
   const fetchProducts = async (searchQuery) => {
     setLoading(true);

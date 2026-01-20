@@ -52,7 +52,7 @@ const CartPage = () => {
                             >
                                 {/* Imagen del producto */}
                                 <img
-                                    src={item.product.image}
+                                    src={`http://localhost:5000/${item.product.images[0]}`}
                                     alt={item.product.name}
                                     className="w-20 h-20 object-cover rounded-lg"
                                 />

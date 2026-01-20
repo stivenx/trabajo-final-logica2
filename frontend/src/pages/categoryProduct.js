@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams} from "react-router-dom";
 import api from "../apiconfig/api";
 import ProductCard from "../components/ProductCard";
+import { TitlesContext } from "../context/titlesContext";
 const { CartContext } = require("../context/cartContext");
+
 
 
 const CatagoryProduct = () => {
@@ -14,10 +16,14 @@ const CatagoryProduct = () => {
   const [types, setTypes] = useState([]);
   const [selectedType, setSelectedType] = useState("");
   const { cart } = useContext(CartContext);
+   const {setTitle} = useContext(TitlesContext);
 
   // Fetch de productos y categorías
   useEffect(() => {
-    
+     // 🔥 Limpia inmediatamente
+   
+    setError("");
+      
     const fetchTypes = async () => {
       try {
         const response = await api.get(`/types/`);
@@ -26,15 +32,41 @@ const CatagoryProduct = () => {
         setError("Error al cargar los tipos");
       }
     };
-    fetchProductos();
+ 
     fetchTypes();
 
-  }, [id,cart]);
+  }, [id,]);
+
+
+  
+
+  useEffect(() => {
+    if(category.name){
+      if(selectedType){
+        const selectedType2 = types.find((type) => type._id === selectedType)?.name;
+        if(selectedType2){
+          setTitle(`tienda tecnologica -${category.name}/${selectedType2}`)
+        }else{
+          setTitle(`tienda tecnologica -${category.name}`)
+        }
+      
+      }else{
+        setTitle(`tienda tecnologica -${category.name}`)
+      }
+
+
+    }
+  }, [category.name,selectedType])
   const fetchProductos = async () => {
+     setCategory({});
+    setProducts([]);
+    setLoading(true);
+    setError("");
+    
     try {
       const response = await api.get(`/products/category/${id}`);
-      const categoria = await api.get(`/categories/${id}`);
-      setCategory(categoria.data);
+      
+   
       setProducts(response.data);
       setLoading(false);
     } catch (error) {
@@ -42,22 +74,53 @@ const CatagoryProduct = () => {
     }
   };
 
+  const fectCategoris = async () => {
+    try {
+      const response = await api.get(`/categories/${id}`);
+      setCategory(response.data);
+    } catch (error) {
+      console.error("Error al obtener la categoría:", error);
+    }
+  };
+
   // Fetch de productos por tipo y categoría
   useEffect(() => {
+    
+     
     if (selectedType) {
       fetchProductsByCategoryAndType(id, selectedType);
+      fectCategoris();
     } else {
       fetchProductos()
+      fectCategoris();
     }
-  }, [id, selectedType]);
+  }, [id, selectedType, cart]);
 
   // Obtener productos por categoría
  
 
   // Obtener productos por categoría y tipo
   const fetchProductsByCategoryAndType = async (categoryId, typeId) => {
+    setCategory({});
+    setProducts([]);
+    setLoading(true);
+    setError("");
     try {
-      const response = await api.get(`/products/${categoryId}/${typeId}`);
+      const response = await api.get(`/products/categoryType/${categoryId}/${typeId}`);
+      setProducts(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error al cargar productos filtrados:", error);
+    }
+  };
+
+  const fetchProductsByCategoryAndType2 = async (categoryId, typeId) => {
+    try {
+      const response = await api.get(`/products/categoryType2/${categoryId}`,{
+        params: {
+          typeId: selectedType.join(',')
+        }
+      });
       setProducts(response.data);
     } catch (error) {
       console.error("Error al cargar productos filtrados:", error);
@@ -66,24 +129,45 @@ const CatagoryProduct = () => {
 
   if (loading) return <div className="text-center py-10 text-lg">Cargando productos...</div>;
   if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
-
  
+/*  const handlectTypeChange = (id) => {
+    setSelectedType((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+
+    );
+  };*/
+  /*
+        <label key={tipo._id} className="mr-4 flex items-center">
+            <input
+              type="checkbox"
+              checked={selectedType.includes(tipo._id)}
+              onChange={() => handlectTypeChange(tipo._id)}
+              className="mr-2"
+            />
+            {tipo.name}
+          </label>
+          */
+        
   return (
     <section className="bg-gray-50 dark:bg-gray-900 py-16">
       {/* Selector de tipo de producto */}
       <div className="flex justify-center mb-6">
         <select
-          value={selectedType}
-          onChange={(event) => setSelectedType(event.target.value)}
-          className="p-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 dark:text-white"
+           value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+          className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
         >
-          <option value="">Todos los tipos</option>
+          <option value="">Todos</option>
           {types.map((tipo) => (
+           
             <option key={tipo._id} value={tipo._id}>
               {tipo.name}
             </option>
           ))}
         </select>
+       
       </div>
       <div className="flex flex-wrap items-center justify-center">
         <h1 className="w-full text-5xl font-bold text-center p-8 dark:text-white ">{category.name} </h1>

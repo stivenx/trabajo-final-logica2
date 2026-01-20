@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import api from '../apiconfig/api';
+import { CartContext } from "../context/cartContext";
 
 const Admin = () => {
     const [products, setProducts] = useState([]);
     const [response, setResponse] = useState("");
    const [search, setSearch] = useState("");
+   const { cart} = useContext(CartContext);
+
 
   useEffect(() => {
       if (search.length >= 3) {
@@ -13,7 +16,7 @@ const Admin = () => {
          fetchProducts();
       }
 
-  })
+  },[cart,search]);
     const handleDelete = async (productId) => {
         try {
             const response = await api.delete(`/products/${productId}`);
@@ -125,7 +128,7 @@ const Admin = () => {
                             <td className="px-6 py-4">{product.type.name}</td>
                             <td className="px-6 py-4">{product.stock}</td>
                             <td className="px-6 py-4">
-                                <img src={product.image} alt={product.name} className="w-10 h-10 object-cover rounded-full" />
+                                <img src={`http://localhost:5000/${product.images[0]}`} alt={product.name} className={`w-10 h-10 object-cover rounded-full ${product.stock === 0 && "opacity-50" }`} />
                             </td>
                             <td className="px-6 py-4">{product.discount}%</td>
                             <td className="px-6 py-4">

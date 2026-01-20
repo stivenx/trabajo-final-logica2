@@ -1,11 +1,12 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState,useRef } from "react";
 import { CartContext } from "../context/cartContext";
 import { AuthContext } from "../context/AuthContext";
 
 export default function CartModal() {
-    const { cart, isCartOpen, toggleCart, removeFromCart, updateItemQuantity, fetchCart } = useContext(CartContext);
+    const { cart, isCartOpen, toggleCart, removeFromCart, updateItemQuantity, fetchCart,clearCart } = useContext(CartContext);
     const { userId } = useContext(AuthContext);
     const [cartLoading, setCartLoading] = useState(true);
+    const modalRef = useRef(null);
     
 
   useEffect(() => {
@@ -17,7 +18,21 @@ export default function CartModal() {
     }, [userId]);
 
    
+    useEffect(()=>{
+        const handleOnclick=(e)=>{
+            if(modalRef.current && !modalRef.current.contains(e.target)){
+                toggleCart();
+            }
+        }
+        if(isCartOpen){
+         document.addEventListener("mousedown",handleOnclick)
+        }
+        
+        return ()=>{
+            document.removeEventListener("mousedown",handleOnclick)
+        }
 
+    },[isCartOpen,toggleCart])
     if (!isCartOpen) return null;
 
     // 🛒 Calcular total del carrito
@@ -28,8 +43,8 @@ export default function CartModal() {
     }, 0);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto">
+        <div  className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div ref={modalRef}  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold">🛒 Carrito de Compras</h2>
                     <button onClick={toggleCart} className="text-gray-500 hover:text-gray-700">✖️</button>
@@ -46,10 +61,10 @@ export default function CartModal() {
                             const finalPrice = item.product.price - (item.product.price * (discountPercentage / 100));
 
                             return (
-                                <div key={item.product._id} className="flex items-center gap-4 p-2 border-b">
+                                <div key={item.product._id + item.quantity } className="flex items-center gap-4 p-2 border-b">
                                     {/* 📸 Imagen del producto */}
                                     <img 
-                                        src={item.product.image} 
+                                        src={`http://localhost:5000/${item.product.images[0]}`} 
                                         alt={item.product.name} 
                                         className="w-16 h-16 object-cover rounded-md"
                                     />
@@ -88,7 +103,7 @@ export default function CartModal() {
                                             </span>
                                         </p>
                                     </div>
-
+                                    
                                     {/* 🗑️ Botón de eliminar */}
                                     <button
                                        onClick={() => removeFromCart(userId, item.product._id)}
@@ -101,11 +116,17 @@ export default function CartModal() {
                         })}
 
                         {/* 🔹 Total del carrito */}
-                        <div className="text-right mt-4 p-2 bg-gray-100 rounded-lg">
+                        <div key={totalCarrito} className="text-right mt-4 p-2 bg-gray-100 rounded-lg">
                             <h3 className="text-lg font-bold text-gray-900">Total:</h3>
                             <p className="text-green-700 font-bold">${totalCarrito.toFixed(2)}</p>
                         </div>
-
+                        {/* 🗑️ Botón de vaciar carrito */}
+                        <button 
+                            onClick={() => clearCart(userId)}
+                            className="mt-4 w-full bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-700"
+                        >
+                            Vaciar Carrito
+                        </button>
                         {/* 🛍️ Botón de ir al checkout */}
                         <button 
                             onClick={() => alert("Redirigiendo a pago...")}

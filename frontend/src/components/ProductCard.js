@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/cartContext";
 import { AuthContext } from "../context/AuthContext";
@@ -7,7 +7,23 @@ import { useNavigate } from "react-router-dom";
 const ProductCard = ({ product }) => {
     const { addToCart,toggleCart,fetchCart } = useContext(CartContext);
     const { userId } = useContext(AuthContext);
+    const [activeImage, setActiveImage] = useState({});
+    const [productDetail, setProductDetail] = useState(null);
+    const [postActive, setPostActive] = useState(null);
+    const modalref = useRef(null);
     const navigate = useNavigate();
+  /*
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modalref.current && !modalref.current.contains(event.target)) {
+                setProductDetail(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+    },[])*/
 
     const handleAddToCart = async () => {
         if (!userId) {
@@ -29,9 +45,27 @@ const ProductCard = ({ product }) => {
 
     const discountPercentage = product.discount ?? 0;
     const finalPrice = product.price - (product.price * (discountPercentage / 100));
+ 
+    const indexImage = activeImage[product._id] ?? 0;
 
+    const nextImage = (productID, totalImage) => {
+        setActiveImage(prev => ({
+            ...prev,
+            [productID]: (prev[productID] ?? 0) === totalImage ? 0 : (prev[productID] ?? 0) + 1
+        }));
+    };
+
+    const prevImage = (productID, totalImage) => {
+        setActiveImage(prev => ({
+            ...prev,
+            [productID]: (prev[productID] ?? 0) === 0 ? totalImage : (prev[productID] ?? 0) - 1
+        }));
+    }
     return (
         <div className="relative w-full max-w-sm bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 mb-4 ml-4 overflow-hidden">
+
+           {/* Vista ampliada */}
+           
            {product.stock > 0 && product.discount > 0 && (
             <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg">
                 -{product.discount}% OFF
@@ -46,17 +80,119 @@ const ProductCard = ({ product }) => {
                     AGOTADO
                 </div>
             )}
+          {product.images.length > 0 ? (
+            <div className="relative w-full flex justify-center items-center">
 
-            <Link to={`/product/${product._id}`}>
-                <img 
-                    className={`p-8 rounded-t-lg object-cover object-center mx-auto w-64 h-64 transition-transform duration-300 hover:scale-105 ${
-                        product.stock === 0 ? "opacity-50" : ""
-                    }`} 
-                    src={product.image} 
-                    alt={product.name} 
-                />
-            </Link>
+                {/* Imagen */}
+                <Link to={`/product/${product._id}`} className="z-10">
+                    <img 
+                        className={`p-8 rounded-t-lg object-cover object-center mx-auto w-64 h-64 transition-transform duration-300 hover:scale-105 ${
+                            product.stock === 0 ? "opacity-50" : ""
+                        }`}
+                        src={`http://localhost:5000/${product.images[indexImage]}`}
+                        alt={product.name}
+                       /* onClick={(e)=>{
+                            e.preventDefault();setProductDetail(product);setPostActive(indexImage)}}*/
+                      
+                       /* onMouseEnter={() => {
+                            product.images.length > 1 &&(  
+                                setActiveImage(prev => ({
+                                ...prev,
+                                [product._id]: indexImage + 1
+                                }))
+                            )
+                        }}
+                            onMouseLeave={() => {
+                            product.images.length > 1 &&(  
+                                setActiveImage(prev => ({
+                                ...prev,
+                                [product._id]: 0
+                                }))
+                            )
+                            }
+                            } */
 
+                    />
+                </Link>
+
+                {/* Botón anterior */}
+                {product.images.length > 1 && (
+                    <button
+                        type="button"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 
+                                text-white text-2xl px-2 py-1 rounded-full z-20"
+                        onClick={() => prevImage(product._id, product.images.length - 1)}
+                    >
+                        ‹
+                    </button>
+                )}
+
+                {/* Botón siguiente */}
+                {product.images.length > 1 && (
+                    <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 
+                                text-white text-2xl px-2 py-1 rounded-full z-20"
+                        onClick={() => nextImage(product._id, product.images.length - 1)}
+                    >
+                        ›
+                    </button>
+                )}
+
+                {/* Indicadores (esferitas) */}
+                {product.images.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                        {product.images.map((_, index) => (
+                            <button
+                                key={index}
+                                className={`w-3 h-3 rounded-full transition 
+                                    border border-gray-700 dark:border-white
+                                    ${index === indexImage 
+                                        ? "bg-gray-700 dark:bg-white" 
+                                        : "bg-gray-400 dark:bg-white/40" 
+                                    }`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setActiveImage(prev => ({
+                                        ...prev,
+                                        [product._id]: index
+                                    }));
+                                }}
+                                /*
+                                onMouseEnter={(e) => {
+                                    e.preventDefault();
+                                    setActiveImage(prev => ({
+                                        ...prev,
+                                        [product._id]: index
+                                    }));
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.preventDefault();
+                                    setActiveImage(prev => ({
+                                        ...prev,
+                                        [product._id]: indexImage
+                                    }));
+                                }}*/
+                            />
+                        ))}
+                    </div>
+                )}
+
+            </div>
+        ) : (
+            <div className="relative w-full flex justify-center items-center">
+                <Link to={`/product/${product._id}`}>
+                    <img 
+                        className="p-8 rounded-t-lg object-cover object-center mx-auto w-64 h-64"
+                        src={`http://localhost:5000/${product.images[0]}`}
+                        alt={product.name}
+                    />
+                </Link>
+            </div>
+        )}
+
+
+           
             <div className="px-5 pb-5">
                 <Link to={`/products/${product._id}`}>
                     <h5 className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">{product.name}</h5>
@@ -107,3 +243,45 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
+/*
+ {productDetail && (
+            <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+                
+                <div ref={modalref} className="relative bg-white rounded-xl shadow-xl max-w-4xl w-full mx-6 overflow-hidden">
+                
+                {/* Botón cerrar /}
+                <button
+                    onClick={() => setProductDetail(null)}
+                    className="absolute top-3 right-3 text-2xl text-white bg-black/50 w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/70"
+                >
+                    ✕
+                </button>
+
+                {/* Imagen grande /}
+                <img
+                    src={`http://localhost:5000/${productDetail.images[postActive].replace(/\\/g, "/")}`}
+                    alt="Vista ampliada"
+                    className="w-full max-h-[80vh] object-contain bg-black"
+                />
+
+                {/* Controles /}
+                {productDetail.images.length > 1 && (
+                    <div className="flex justify-center gap-3 p-4 bg-gray-100">
+                    {productDetail.images.map((image, index) => (
+                        <img
+                        key={index}
+                        src={`http://localhost:5000/${image.replace(/\\/g, "/")}`}
+                        alt={`Imagen ${index + 1}`}
+                        onClick={()=>setPostActive(index)}
+                        className={`w-20 h-20 object-contain cursor-pointer ${
+                            index === postActive ? "border-2 border-blue-500" : ""
+                        }`}
+                        onMouseEnter={()=>setPostActive(index)}
+                        onMouseLeave={()=>setPostActive(postActive)}
+                        />
+                    ))}
+                    </div>
+                )}
+                </div>
+            </div>
+            )}*/ 

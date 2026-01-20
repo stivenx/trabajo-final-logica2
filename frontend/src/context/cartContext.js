@@ -67,7 +67,7 @@ export const CartProvider = ({ children }) => {
         try {
             const response = await api.delete(`carts/${userId}/${productId}`);
             if (response.status === 200) {
-                fetchCart(userId);
+                await fetchCart(userId);
             }
             
         } catch (error) {
@@ -101,6 +101,22 @@ export const CartProvider = ({ children }) => {
             console.error("Error al actualizar la cantidad del producto en el carrito:", error?.response?.data || error.message);
         }
     };
+
+
+    const clearCart = async (userId) => {
+        if (!userId) {
+            console.error("No hay usuario autenticado");
+            return;
+        }
+        try {
+            const response = await api.delete(`carts/${userId}`);
+            if (response.status === 200) {
+                fetchCart(userId);
+            }
+        } catch (error) {
+            console.error("Error al vaciar el carrito", error);
+        }
+    };
     
     // Calcular el total de productos en el carrito
     
@@ -111,7 +127,7 @@ export const CartProvider = ({ children }) => {
    
 
     return (
-        <CartContext.Provider value={{ cart, fetchCart, addToCart, removeFromCart,totalItemsInCart,loading, cartid, setCart, updateItemQuantity, isCartOpen, toggleCart }}>
+        <CartContext.Provider value={{ cart, fetchCart, addToCart, removeFromCart,totalItemsInCart,loading, cartid, setCart, updateItemQuantity, isCartOpen, toggleCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );

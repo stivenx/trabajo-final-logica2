@@ -5,6 +5,8 @@ import './App.css';
 import  { CartProvider } from "./context/cartContext";
 import { AuthProvider } from "./context/AuthContext";
 import CartModal from './context/cartModal';
+import {TitlesProvider} from './context/titlesContext'
+import {LogoutProvider} from './context/logoutContext'
 
 
 //Pages
@@ -30,6 +32,10 @@ import Create2 from './pages/create2';
 import ProductList from './pages/mostrarPruebas';
 import Productid from './pages/pruebaid';
 import  ProductoUpdateForm from './pages/editprueba';
+import DocumentsCreate from './pages/documentsCreate';
+import DocumentsList from './pages/documents';
+import DocumentDetail from './pages/documentDetail';
+import LogoutModal from './context/logoutModal';
 
 //Components
 import Navbar from './components/Navbar';
@@ -40,9 +46,13 @@ function App() {
   return (
     <AuthProvider>
     <CartProvider>
+    
     <Router>
+      <LogoutProvider>
+      <TitlesProvider>
       <Navbar />
       <CartModal />
+      <LogoutModal />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
@@ -66,14 +76,21 @@ function App() {
         <Route path="/products" element={<ProductList />} />
         <Route path="/prueba/:id" element={<Productid />} />
         <Route path="/edit/:id" element={<ProductoUpdateForm />} />
+        <Route path="/documents/create" element={<DocumentsCreate />} />
+        <Route path="/documents" element={<DocumentsList />} />
+        <Route path="/documents/:id" element={<DocumentDetail />} />
+
 
 
         
-
+      
         </Routes>
       <Footer />
       <ThemeToggleBubble />
+      </TitlesProvider>
+      </LogoutProvider>
     </Router>
+    
     </CartProvider>
     </AuthProvider>
     

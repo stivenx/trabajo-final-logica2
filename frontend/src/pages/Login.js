@@ -20,7 +20,7 @@ const Login = () => {
             localStorage.setItem("role", data.role);
             navigate("/");
         } catch (error) {  
-            alert("Credenciales incorrectas");
+            alert(error.response.data.error);
         }
     };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 import api from '../apiconfig/api';
 
 const AdminCreate = () => {
@@ -7,32 +7,41 @@ const AdminCreate = () => {
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState(1);
     const [category, setCategory] = useState('');
-    const [image, setImageUrl] = useState('');
+    const [images, setImageUrl] = useState([]);
+    const [previewImages, setPreviewImages] = useState([]);
     const [stock, setStock] = useState(1);
     const [type, setTypes] = useState("");
     const [error, setError] = useState('');
     const [selecteTypes, setSelectedTypes] = useState([]);
     const [selecteCategory, setSelectedCategory] = useState([]);
-
+    const location = useLocation()
+  
+    console.log(location.pathname)
     const navigate = useNavigate();
     useEffect(() => {
         handleGetTypes();
         handleGetCategory();
-    })
+    },[])
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-    
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("description", description);
+        formData.append("price", price);
+        formData.append("stock", stock);
+        formData.append("category", category);
+
+        formData.append("type", type);
+        for(const file of images) {
+            formData.append("images", file);
+        }
         try {
-            const response = await api.post('/products', {
-                name,
-                description,
-                price,
-                stock,
-                category,
-                image,
-                type,
-                discount: 0
+            const response = await api.post('/products',  formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                
             });
     
             console.log(response.data);
@@ -65,9 +74,47 @@ const AdminCreate = () => {
     
             // Desplazar la pantalla hacia arriba al mostrar el error
             window.scrollTo({ top: 0, behavior: "smooth" });
+    
+            // Limpiar el error despues de 5 segundos
+            setTimeout(() => {
+                setError("");
+            }, 5000);
         }
     };
-    
+       useEffect(() => {
+               if (error) {
+                   const timer = setTimeout(() => {
+                       setError("");
+                   }, 5000); // 5000ms = 5 segundos
+       
+                   return () => clearTimeout(timer); // Limpia el temporizador si el error cambia
+               }
+           }, [error]); // Se ejecuta cada vez que el error cambia
+    const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    const totalImages = 5 - images.length;
+
+    // Función para mostrar error y limpiarlo
+    // No permite agregar más imágenes si ya tienes 5
+    if (totalImages <= 0) {
+        setError("Solo se permiten 5 imágenes.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+    }
+
+    const nuevasImagenes = files.slice(0, totalImages);
+    const imagenesActualizadas = [...images, ...nuevasImagenes];
+
+    setImageUrl(imagenesActualizadas);
+    setPreviewImages(nuevasImagenes.map((file) => URL.createObjectURL(file)));
+
+    // Si se descartaron imágenes adicionales
+    if (files.length > nuevasImagenes.length) {
+        setError("Solo se permiten 5 imágenes, las restantes fueron descartadas.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+};
+
     const handleGetTypes = async () => {
         try {
             const response = await api.get('/types');
@@ -188,17 +235,48 @@ const AdminCreate = () => {
                                 </select>
                     </div>
 
-                    {/* Imagen */}
+                    {/* Imágenes */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-900 dark:text-white">URL de la imagen:</label>
-                        <textarea
+                        <label className="block text-sm font-medium text-gray-900 dark:text-white">
+                            Imágenes:
+                        </label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
                             className="w-full p-2 border rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                            rows="4"
-                            value={image}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            required
                         />
                     </div>
+                    {/* Previsualización de las imágenes */}
+                   {previewImages.length > 0 && (
+                        <div className="mt-4">
+                            <label className="block text-sm font-semibold text-gray-900 dark:text-gray-200 mb-2">
+                            Imágenes:
+                            </label>
+
+                            <div className="
+                            grid 
+                            grid-cols-2 
+                            sm:grid-cols-3 
+                            md:grid-cols-4 
+                            gap-4
+                            ">
+                            {previewImages.map((image, index) => (
+                                <div 
+                                key={index}
+                                className="overflow-hidden rounded-xl shadow-sm border border-gray-300 dark:border-gray-700 hover:shadow-lg transition"
+                                >
+                                <img
+                                    src={image}
+                                    alt={`Imagen ${index}`}
+                                    className="w-full h-32 object-cover sm:h-36 md:h-40"
+                                />
+                                </div>
+                            ))}
+                            </div>
+                        </div>
+                        )}
 
                     {/* Botón */}
                     <button

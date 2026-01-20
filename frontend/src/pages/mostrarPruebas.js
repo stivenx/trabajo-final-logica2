@@ -19,16 +19,25 @@ export default function ProductList() {
     fetchProductos();
   }, []);
 
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/prueba/${id}`);
+      setProductos(productos.filter((producto) => producto._id !== id));
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+    }
+  };
+
   return (
     <div className="grid gap-6 p-6 md:grid-cols-2 lg:grid-cols-3">
       <Link to="/create2">crear</Link>
       {productos.map((producto) => (
-        <ProductoCard key={producto._id} producto={producto} />
+        <ProductoCard key={producto._id} producto={producto} handleDelete={handleDelete}  />
       ))}
     </div>
   );
 }
-function ProductoCard({ producto }) {
+function ProductoCard({ producto, handleDelete }) {
   // Estado local para controlar qué imagen se está mostrando actualmente
   const [currentImg, setCurrentImg] = useState(0);
 
@@ -121,6 +130,7 @@ function ProductoCard({ producto }) {
         </button>
       </Link>
       <Link to={`/edit/${producto._id}`}>editar </Link>
+      <button onClick={() => handleDelete(producto._id)}>eliminar</button>
     </div>
   );
 }
